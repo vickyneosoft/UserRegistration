@@ -1,21 +1,29 @@
 import React, { useRef, useCallback, useMemo, useState } from "react";
 import { View, StyleSheet, Keyboard, Platform } from 'react-native'
-import AppInput, { AppInputAPIs } from "../../components/AppInput";
-import ImagePickerPrompt from "../../components/ImagePickerPrompt";
-import ProfileImagePicker from "../../components/ProfileImagePicker";
-import colors from "../../constants/colors";
-import withKeyboardHandling from "../../HOC/withKeyboardHandling";
-import { Gender, ImagePickerActions, PermissionResult } from "../../types";
-import { containsNumbers, hasOnlyNumbers, isValidEmail, isValidPassword, openAppSettingsPrompt } from "../../utils/MiscUtils";
-import { useFormik } from 'formik'
-import { PERMISSIONS } from 'react-native-permissions'
-
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import ImagePicker from 'react-native-image-crop-picker'
-import { checkSinglePermission, requestSinglePermission } from "../../utils/PermissionUtils";
-import images from "../../assets/images";
-import AppButton from "../../components/AppButton";
+import { PERMISSIONS } from 'react-native-permissions'
+import { useFormik } from 'formik'
+
+import withKeyboardHandling from "../../HOC/withKeyboardHandling";
+import ImagePickerPrompt from "../../components/ImagePickerPrompt";
+import AppInput, { AppInputAPIs } from "../../components/AppInput";
+import ProfileImagePicker from "../../components/ProfileImagePicker";
 import GenderSelection from "../../components/GenderSelection";
 import DropDownButton from "../../components/DropDownButton";
+import AppInputButton from "../../components/AppInputButton";
+import AppButton from "../../components/AppButton";
+import {
+    containsNumbers,
+    hasOnlyNumbers,
+    isValidEmail,
+    isValidPassword,
+    openAppSettingsPrompt
+} from "../../utils/MiscUtils";
+import colors from "../../constants/colors";
+import images from "../../assets/images";
+import { checkSinglePermission, requestSinglePermission } from "../../utils/PermissionUtils";
+import { Gender, ImagePickerActions, PermissionResult } from "../../types";
 import data from "../../data";
 
 enum FormFieldIds {
@@ -27,7 +35,8 @@ enum FormFieldIds {
     GENDER = 'gender',
     PASSWORD = 'password',
     CONF_PASSWORD = 'confirmPassword',
-    QUALIFICATION = 'qualification'
+    QUALIFICATION = 'qualification',
+    DOB = 'dob'
 }
 
 type FormFieldValueTypes = {
@@ -39,7 +48,8 @@ type FormFieldValueTypes = {
     mobileNumber: number | undefined;
     profilePhoto: string;
     gender: Gender | unknown;
-    qualification: string
+    qualification: string;
+    dob: Date
 };
 
 type FormFieldErrorTypes = {
@@ -51,12 +61,15 @@ type FormFieldErrorTypes = {
     mobileNumber: string;
     profilePhoto: string;
     gender: string;
-    qualification: string
+    qualification: string;
+    dob: string
 };
 
 let hasSubmitted = false
 
 const RegisterScreen = () => {
+    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+
     const firstNameRef = useRef<AppInputAPIs>(null);
     const lastNameRef = useRef<AppInputAPIs>(null);
     const phoneNumberRef = useRef<AppInputAPIs>(null);
@@ -74,7 +87,8 @@ const RegisterScreen = () => {
             mobileNumber: undefined,
             profilePhoto: '',
             gender: '',
-            qualification: ''
+            qualification: '',
+            dob: new Date()
         }),
         [],
     );
@@ -106,6 +120,8 @@ const RegisterScreen = () => {
             confirmPassword,
             gender,
             profilePhoto,
+            qualification,
+            dob
         } = formValues;
 
         const validationErrors: FormFieldErrorTypes = {
@@ -117,7 +133,8 @@ const RegisterScreen = () => {
             profilePhoto: '',
             gender: '',
             confirmPassword: '',
-            qualification: ''
+            qualification: '',
+            dob: ''
         };
 
         if (!firstName) {
@@ -194,7 +211,7 @@ const RegisterScreen = () => {
         values,
         setFieldValue,
         setErrors,
-    } = useFormik({
+    } = useFormik<FormFieldValueTypes>({
         initialValues,
         onSubmit,
         validate,
@@ -211,7 +228,7 @@ const RegisterScreen = () => {
     }, []);
 
     const onChangeTextHandler = useCallback(
-        (fieldId: FormFieldIds, enteredText: string) => {
+        (fieldId: FormFieldIds, enteredText: string | Date | undefined) => {
             if (hasSubmitted) {
                 setFieldValue(fieldId, enteredText, true);
             }
@@ -368,8 +385,24 @@ const RegisterScreen = () => {
         handleSubmit();
     }, [handleSubmit]);
 
+    const onSelectDOBPressHandler = useCallback(() => {
+        setShow(true)
+    }, [])
+
+    const onDateChangeHandler = useCallback((date: Date) => {
+        console.log(date?.getTime())
+        setDatePickerVisible(false);
+        onChangeTextHandler(FormFieldIds.DOB, date)
+    }, [])
+
     return (
         <View style={styles.rootContainer}>
+            <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={onDateChangeHandler}
+                onCancel={setDatePickerVisible.bind(null, false)}
+            />
             <ImagePickerPrompt
                 isVisible={isImagePickerPromptVisible}
                 onDismiss={setImagePickerPromptVisibility.bind(null, false)}
@@ -467,6 +500,12 @@ const RegisterScreen = () => {
                 options={data.educationOptions}
                 onSelect={onChangeTextHandler.bind(null, FormFieldIds.QUALIFICATION)}
                 errorMsg={errors.qualification}
+            />
+            <AppInputButton
+                title="Date Of Birth"
+                placeholder="Select Your Date Of Birth"
+                onPress={onSelectDOBPressHandler}
+                errorMsg={errors.dob}
             />
             <AppButton
                 text="NEXT"
