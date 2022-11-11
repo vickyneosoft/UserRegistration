@@ -1,7 +1,6 @@
 export default {
   ic_user: require('./ic_user.png'),
   ic_edit: require('./ic_edit.png'),
-  ic_address: require('./ic_address.png'),
   ic_down_arrow: require('./ic_down_arrow.png'),
   ic_email: require('./ic_email.png'),
   ic_password: require('./ic_password.png'),

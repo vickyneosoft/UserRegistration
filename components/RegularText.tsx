@@ -1,5 +1,6 @@
-import React, {useMemo} from 'react';
-import {StyleProp, StyleSheet, Text, TextProps, TextStyle} from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleProp, StyleSheet, Text, TextProps, TextStyle } from 'react-native';
+import colors from '../constants/colors';
 
 type BoldTextProps = {
   children: string | React.ReactNode;
@@ -21,6 +22,7 @@ const RegularText = (props: BoldTextProps & TextProps) => {
 const styles = StyleSheet.create({
   container: {
     fontSize: 12,
+    color: colors.black,
   },
 });
 

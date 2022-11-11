@@ -65,6 +65,7 @@ const DropDownButton = (props: DropDownButtonProps) => {
         statusBarIsTranslucent={false}
         onChange={onChangeHandler}
         renderRightIcon={renderRightIcon}
+        itemTextStyle={styles.itemTextStyle}
       />
       {errorMsg && typeof errorMsg === 'string' ? (
         <RegularText style={{ color: colors.red }}>{errorMsg}</RegularText>
@@ -113,6 +114,9 @@ const styles = StyleSheet.create({
     height: 20,
   },
   downArrow: { height: 18, width: 18, marginHorizontal: 10 },
+  itemTextStyle: {
+    color: colors.black
+  }
 });
 
 export default React.memo(DropDownButton);

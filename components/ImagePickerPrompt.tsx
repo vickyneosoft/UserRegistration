@@ -1,9 +1,9 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 import TextButton from './TextButton';
 import colors from '../constants/colors';
-import {ImagePickerActions} from '../types';
+import { ImagePickerActions } from '../types';
 
 type ImagePickerPromptProps = {
   isVisible: boolean;
@@ -12,7 +12,12 @@ type ImagePickerPromptProps = {
 };
 
 const ImagePickerPrompt = (props: ImagePickerPromptProps) => {
-  const {isVisible, onDismiss, onAction} = props;
+  const { isVisible, onDismiss, onAction } = props;
+
+  if (!isVisible) {
+    return null
+  }
+
   return (
     <Modal
       isVisible={isVisible}
@@ -20,8 +25,7 @@ const ImagePickerPrompt = (props: ImagePickerPromptProps) => {
       animationOut="fadeIn"
       useNativeDriver={true}
       onBackButtonPress={onDismiss}
-      onBackdropPress={onDismiss}
-      statusBarTranslucent={true}>
+      onBackdropPress={onDismiss}>
       <View style={styles.btnContainer}>
         <TextButton
           title="Capture Image"
@@ -37,7 +41,7 @@ const ImagePickerPrompt = (props: ImagePickerPromptProps) => {
 };
 
 const styles = StyleSheet.create({
-  btnContainer: {backgroundColor: colors.white, padding: 10},
+  btnContainer: { backgroundColor: colors.white, padding: 10 },
 });
 
 export default ImagePickerPrompt;

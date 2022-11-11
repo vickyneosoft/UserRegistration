@@ -1,10 +1,12 @@
 import React, { useRef, useCallback, useMemo, useState } from "react";
 import { View, StyleSheet, Keyboard, Platform } from 'react-native'
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import ImagePicker from 'react-native-image-crop-picker'
 import { PERMISSIONS } from 'react-native-permissions'
 import { useFormik } from 'formik'
 
+// Components
 import withKeyboardHandling from "../../HOC/withKeyboardHandling";
 import ImagePickerPrompt from "../../components/ImagePickerPrompt";
 import AppInput, { AppInputAPIs } from "../../components/AppInput";
@@ -13,18 +15,28 @@ import GenderSelection from "../../components/GenderSelection";
 import DropDownButton from "../../components/DropDownButton";
 import AppInputButton from "../../components/AppInputButton";
 import AppButton from "../../components/AppButton";
+
+// Utils
 import {
-    containsNumbers,
+    hasOnlyCharacters,
     hasOnlyNumbers,
     isValidEmail,
     isValidPassword,
     openAppSettingsPrompt
 } from "../../utils/MiscUtils";
+import { checkSinglePermission, requestSinglePermission } from "../../utils/PermissionUtils";
+
+// Types
+import { AddUserPayload, Gender, ImagePickerActions, PermissionResult } from "../../types";
+
+// Constants
 import colors from "../../constants/colors";
 import images from "../../assets/images";
-import { checkSinglePermission, requestSinglePermission } from "../../utils/PermissionUtils";
-import { Gender, ImagePickerActions, PermissionResult } from "../../types";
 import data from "../../data";
+
+// Redux
+import { registerNewUser } from "../../store/slices/usersSlice";
+import { useAppDispatch } from "../../hooks/redux";
 
 enum FormFieldIds {
     PROFILE_PHOTO = 'profilePhoto',
@@ -49,7 +61,7 @@ type FormFieldValueTypes = {
     profilePhoto: string;
     gender: Gender | unknown;
     qualification: string;
-    dob: Date
+    dob: Date | undefined
 };
 
 type FormFieldErrorTypes = {
@@ -67,7 +79,11 @@ type FormFieldErrorTypes = {
 
 let hasSubmitted = false
 
-const RegisterScreen = () => {
+const RegisterScreen: React.FC<NativeStackScreenProps<any, any>> = (props) => {
+    const { navigation } = props
+
+    const dispatch = useAppDispatch()
+
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
 
     const firstNameRef = useRef<AppInputAPIs>(null);
@@ -88,26 +104,25 @@ const RegisterScreen = () => {
             profilePhoto: '',
             gender: '',
             qualification: '',
-            dob: new Date()
+            dob: undefined
         }),
         [],
     );
 
     const onSubmit = useCallback(
-        (_formValues: FormFieldValueTypes) => {
-            // const {
-            //   firstName,
-            //   lastName,
-            //   email,
-            //   password,
-            //   confirmPassword,
-            //   mobileNumber,
-            //   profilePhoto,
-            //   gender,
-            // } = _formValues;
-            // navigation.navigate('professional');
+        (formValues: FormFieldValueTypes) => {
+            console.log('formValues : ', formValues)
+            if (!formValues.dob) {
+                return
+            }
+            const dataToBeStored: AddUserPayload = {
+                ...formValues,
+                dob: new Date(formValues.dob).getTime()
+            }
+            dispatch(registerNewUser(dataToBeStored))
+            navigation.goBack()
         },
-        [],
+        [navigation, dispatch],
     );
 
     const validate = useCallback((formValues: FormFieldValueTypes) => {
@@ -137,41 +152,46 @@ const RegisterScreen = () => {
             dob: ''
         };
 
-        if (!firstName) {
+        if (!firstName.trim()) {
             validationErrors.firstName = 'First name required.';
-        } else if (containsNumbers(firstName)) {
+        } else if (!hasOnlyCharacters(firstName.trim())) {
             validationErrors.firstName =
-                'Numeric values are not allowed in first name.';
-        } else if (firstName.length <= 3) {
+                'Only character values are allowed in first name.';
+        } else if (firstName.trim().length <= 3) {
             validationErrors.firstName =
                 'First name should contain more than 3 characters.';
         }
-        if (!lastName) {
+
+        if (!lastName.trim()) {
             validationErrors.lastName = 'Last name required.';
-        } else if (containsNumbers(lastName)) {
+        } else if (!hasOnlyCharacters(lastName.trim())) {
             validationErrors.lastName =
-                'Numeric values are not allowed in last name.';
-        } else if (lastName.length <= 3) {
+                'Only character values are allowed in last name.';
+        } else if (lastName.trim().length <= 3) {
             validationErrors.lastName =
                 'Last name should contain more than 3 characters.';
         }
-        if (!email) {
+
+        if (!email.trim()) {
             validationErrors.email = 'Email address required.';
-        } else if (!isValidEmail(email)) {
+        } else if (!isValidEmail(email.trim())) {
             validationErrors.email = 'Please enter a valid email address.';
         }
-        if (!password) {
+
+        if (!password.trim()) {
             validationErrors.password = 'Password required.';
-        } else if (!isValidPassword(password)) {
+        } else if (!isValidPassword(password.trim())) {
             validationErrors.password =
                 'Password should contain characters, number(s) and special symbols with min 7 length and max 15 length.';
         }
-        if (!confirmPassword) {
+
+        if (!confirmPassword.trim()) {
             validationErrors.confirmPassword = 'Confirm password required.';
-        } else if (password !== confirmPassword) {
+        } else if (password.trim() !== confirmPassword.trim()) {
             validationErrors.confirmPassword =
                 'Password and Confirm password does not match.';
         }
+
         if (!mobileNumber) {
             validationErrors.mobileNumber = 'Mobile number required.';
         } else if (
@@ -185,16 +205,24 @@ const RegisterScreen = () => {
             mobileNumber.toString().length !== 10
         ) {
             validationErrors.mobileNumber =
-                'Mobile number should contain exact 10 digits of input.';
+                'Mobile number field should contain exact 10 digits of input.';
         }
+
         if (!profilePhoto) {
             validationErrors.profilePhoto = 'Please select profile picture.';
         }
+
         if (!gender) {
             validationErrors.gender = 'Please select gender.';
         }
 
-        type P = keyof FormFieldErrorTypes;
+        if (!qualification) {
+            validationErrors.qualification = 'Select your qualification.';
+        }
+
+        if (!dob) {
+            validationErrors.dob = 'Select your Date of Birth.';
+        }
 
         const errorKeys = Object.keys(validationErrors).filter(
             (key) => validationErrors[key],
@@ -210,7 +238,6 @@ const RegisterScreen = () => {
         handleBlur,
         values,
         setFieldValue,
-        setErrors,
     } = useFormik<FormFieldValueTypes>({
         initialValues,
         onSubmit,
@@ -386,7 +413,7 @@ const RegisterScreen = () => {
     }, [handleSubmit]);
 
     const onSelectDOBPressHandler = useCallback(() => {
-        setShow(true)
+        setDatePickerVisible(true)
     }, [])
 
     const onDateChangeHandler = useCallback((date: Date) => {
@@ -395,11 +422,18 @@ const RegisterScreen = () => {
         onChangeTextHandler(FormFieldIds.DOB, date)
     }, [])
 
+    const yesterdayDate = useMemo(() => {
+        const currDate = new Date()
+        currDate.setDate(currDate.getDate() - 1)
+        return currDate
+    }, [])
+
     return (
         <View style={styles.rootContainer}>
             <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"
+                maximumDate={yesterdayDate}
                 onConfirm={onDateChangeHandler}
                 onCancel={setDatePickerVisible.bind(null, false)}
             />
@@ -424,6 +458,7 @@ const RegisterScreen = () => {
                     FormFieldIds.FIRST_NAME,
                 )}
                 errorMsg={errors.firstName}
+                maxLength={25}
             />
             <AppInput
                 ref={lastNameRef}
@@ -436,6 +471,7 @@ const RegisterScreen = () => {
                     FormFieldIds.LAST_NAME,
                 )}
                 errorMsg={errors.lastName}
+                maxLength={25}
             />
             <AppInput
                 ref={phoneNumberRef}
@@ -448,6 +484,7 @@ const RegisterScreen = () => {
                     null,
                     FormFieldIds.PHONE_NUMBER,
                 )}
+                maxLength={10}
                 errorMsg={errors.mobileNumber}
             />
             <AppInput
@@ -457,6 +494,7 @@ const RegisterScreen = () => {
                 placeholder="Your email goes here"
                 onChangeText={onChangeTextHandler.bind(null, FormFieldIds.EMAIL)}
                 onSubmitEditing={onSubmitEditingHandler.bind(null, FormFieldIds.EMAIL)}
+                keyboardType="email-address"
                 errorMsg={errors.email}
             />
             <GenderSelection
@@ -504,6 +542,7 @@ const RegisterScreen = () => {
             <AppInputButton
                 title="Date Of Birth"
                 placeholder="Select Your Date Of Birth"
+                value={values.dob}
                 onPress={onSelectDOBPressHandler}
                 errorMsg={errors.dob}
             />

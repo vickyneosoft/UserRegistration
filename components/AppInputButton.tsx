@@ -18,7 +18,8 @@ type AppInputButtonProp = {
     errorMsg: string | undefined
     style?: ViewStyle
     placeholder: string
-    onPress: () => any
+    value: undefined | Date
+    onPress: () => void
 };
 
 /*
@@ -29,6 +30,7 @@ const AppInputButton = (props: AppInputButtonProp) => {
         title,
         errorMsg,
         style,
+        value,
         placeholder,
         onPress
     } = props;
@@ -39,11 +41,27 @@ const AppInputButton = (props: AppInputButtonProp) => {
         [style],
     );
 
+    const renderValueOrPlaceholder = useMemo(() => {
+        return (
+            <RegularText
+                style={value ? styles.valueTxt : styles.placeholderTxt}
+            >
+                {
+                    value
+                        ? typeof value === 'object'
+                            ? value.toDateString()
+                            : value
+                        : placeholder
+                }
+            </RegularText>
+        )
+    }, [value, placeholder])
+
     return (
         <Pressable onPress={onPress} style={combinedStyles}>
             {title ? <BoldText>{title}</BoldText> : null}
             <View style={styles.container}>
-                <RegularText style={styles.placeholderTxt}>{placeholder}</RegularText>
+                {renderValueOrPlaceholder}
             </View>
             {errorMsg && typeof errorMsg === 'string' ? (
                 <RegularText style={styles.errorTxt}>{errorMsg}</RegularText>
@@ -54,11 +72,11 @@ const AppInputButton = (props: AppInputButtonProp) => {
 
 const styles = StyleSheet.create({
     root: {
-        minHeight: 73,
         marginVertical: 10,
     },
     container: {
-        flex: 1,
+        // flex: 1,
+        paddingVertical: 15,
         borderWidth: 1,
         borderColor: colors.purple,
         flexDirection: 'row',
@@ -82,6 +100,11 @@ const styles = StyleSheet.create({
     },
     errorTxt: {
         color: colors.red
+    },
+    valueTxt: {
+        color: colors.black,
+        fontStyle: "italic",
+        fontSize: 14
     },
     placeholderTxt: {
         color: colors.lightPurple,

@@ -10,14 +10,24 @@ const Stack = createNativeStackNavigator()
 function MainNavigation() {
     return (
         <NavigationContainer>
-            <Stack.Navigator>
+            <Stack.Navigator
+                screenOptions={{
+                    headerTitleAlign: "center"
+                }}
+            >
                 <Stack.Screen
                     name="usersList"
                     component={UserListScreen}
+                    options={{
+                        headerTitle: "Users"
+                    }}
                 />
                 <Stack.Screen
                     name="register"
                     component={RegisterScreen}
+                    options={{
+                        headerTitle: "Register"
+                    }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

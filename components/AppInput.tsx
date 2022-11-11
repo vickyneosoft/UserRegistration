@@ -79,7 +79,7 @@ const AppInput = forwardRef(
 
     // * manage component state from parent component using ref
     const initHandler = useCallback(
-      () => ({setText, getText, focus}),
+      () => ({ setText, getText, focus }),
       [setText, getText, focus],
     );
 
@@ -165,7 +165,7 @@ const AppInput = forwardRef(
           {renderPasswordEyeHandler}
         </View>
         {errorMsg && typeof errorMsg === 'string' ? (
-          <RegularText style={{color: colors.red}}>{errorMsg}</RegularText>
+          <RegularText style={{ color: colors.red }}>{errorMsg}</RegularText>
         ) : null}
       </View>
     );
@@ -173,7 +173,7 @@ const AppInput = forwardRef(
 );
 
 const styles = StyleSheet.create({
-  root: {marginBottom: 10},
+  root: { marginBottom: 10 },
   container: {
     borderWidth: 1,
     borderColor: colors.purple,
@@ -182,8 +182,8 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   logo: {
-    height: 20,
-    width: 20,
+    height: 24,
+    width: 24,
     marginHorizontal: 12,
   },
   input: {

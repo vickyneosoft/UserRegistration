@@ -1,8 +1,8 @@
-import React, {useCallback, useState} from 'react';
-import {Image, Pressable, StyleSheet, View} from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import images from '../assets/images';
 import colors from '../constants/colors';
-import {Gender} from '../types';
+import { Gender } from '../types';
 import BoldText from './BoldText';
 import RegularText from './RegularText';
 
@@ -19,25 +19,25 @@ type RadioButtonProps = {
 };
 
 const RadioButton = (props: RadioButtonProps) => {
-  const {id, checked, text, onChange} = props;
+  const { id, checked, text, onChange } = props;
 
   return (
     <Pressable
       onPress={onChange}
-      style={{flexDirection: 'row', alignItems: 'center', marginRight: 10}}>
+      style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
       <Image
         source={
           id === checked ? images.ic_radio_checked : images.ic_radio_unchecked
         }
         style={styles.icon}
       />
-      <RegularText style={{marginLeft: 2}}>{text}</RegularText>
+      <RegularText style={{ marginLeft: 3, fontSize: 14 }}>{text}</RegularText>
     </Pressable>
   );
 };
 
 const GenderSelection = (props: GenderSelectionProps) => {
-  const {errorMsg, onChange} = props;
+  const { errorMsg, onChange } = props;
 
   const [checked, setChecked] = useState<Gender>();
 
@@ -50,9 +50,9 @@ const GenderSelection = (props: GenderSelectionProps) => {
   );
 
   return (
-    <View style={{marginVertical: 10}}>
+    <View style={{ marginBottom: 5 }}>
       <BoldText>{'Gender'}</BoldText>
-      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
         <RadioButton
           id={Gender.MALE}
           text={'Male'}
@@ -67,14 +67,14 @@ const GenderSelection = (props: GenderSelectionProps) => {
         />
       </View>
       {errorMsg && typeof errorMsg === 'string' ? (
-        <RegularText style={{color: colors.red}}>{errorMsg}</RegularText>
+        <RegularText style={{ color: colors.red }}>{errorMsg}</RegularText>
       ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  icon: {height: 24, width: 24},
+  icon: { height: 20, width: 20 },
 });
 
 export default GenderSelection;
