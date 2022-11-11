@@ -1,13 +1,10 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useCallback, useEffect, useLayoutEffect, useMemo } from "react";
-import { View, StyleSheet, FlatList, ListRenderItemInfo, InteractionManager } from 'react-native'
-import { useDispatch } from "react-redux";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { View, StyleSheet, FlatList, ListRenderItemInfo, InteractionManager, ActivityIndicator } from 'react-native'
 import AppButton from "../../components/AppButton";
 
 // Components
 import BoldText from "../../components/BoldText";
-import RegularText from "../../components/RegularText";
-import TextButton from "../../components/TextButton";
 import UserItem from "../../components/UserItem";
 
 // Constants
@@ -27,7 +24,7 @@ const UserListScreen: React.FC<NativeStackScreenProps<any, any>> = (props: any) 
     const { navigation } = props
 
     const dispatch = useAppDispatch()
-    const { isLoading, data: registeredUsers } = useAppSelector(state => state.users)
+    const { isLoading, error, data: registeredUsers } = useAppSelector(state => state.users)
 
     const onRegisterBtnPress = useCallback(() => {
         navigation.navigate('register')
@@ -58,12 +55,20 @@ const UserListScreen: React.FC<NativeStackScreenProps<any, any>> = (props: any) 
     const renderListEmptyComponentHandler = useMemo(() => {
         return (
             <View style={[styles.rootContainer, { alignItems: 'center', justifyContent: 'center' }]}>
-                <BoldText style={{ fontSize: 20 }}>
-                    {"No users available"}
-                </BoldText>
+                {
+                    isLoading
+                        ? (
+                            <ActivityIndicator size={"large"} color={colors.black} />
+                        )
+                        : (
+                            <BoldText style={{ fontSize: 20 }}>
+                                {error ?? "No users available"}
+                            </BoldText>
+                        )
+                }
             </View>
         )
-    }, [onRegisterBtnPress])
+    }, [isLoading, error])
 
     useEffect(() => {
         InteractionManager.runAfterInteractions(() => {

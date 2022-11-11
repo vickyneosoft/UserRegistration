@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { ActionCreatorWithPayload, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import auth from '@react-native-firebase/auth'
 import firestore from '@react-native-firebase/firestore'
@@ -25,7 +25,6 @@ const initialState: UsersState = {
     error: null,
     registerUserSuccess: false,
     registerUserFailure: false,
-    lastDocSnap: null
 }
 
 export const createAuthUserThunk = createAsyncThunk<UserPayload, AddUserPayload>(
@@ -77,29 +76,17 @@ export const createAuthUserThunk = createAsyncThunk<UserPayload, AddUserPayload>
     }
 )
 
-export const getUsersThunk = createAsyncThunk<null, any>(
+export const getUsersThunk = createAsyncThunk(
     'getUsersThunk',
-    async (_arg, _thunkAPI) => {
-        return firestore()
+    async (arg, thunkAPI) => {
+        const usersRes = await firestore()
             .collection(constants.FIREBASE_USERS_COLLECTION)
-            .limit(constants.FIREBASE_USERS_FETCH_LIMIT)
-            .get()
+            .get();
+
+        return usersRes.docs.map(doc => doc.data())
+
     }
 )
-
-// export const getMoreUsersThunk = createAsyncThunk<any, any>(
-//     'getMoreUsersThunk',
-//     async (_arg, thunkAPI: BaseThunkAPI<RootState, unknown>) => {
-//         const rootStore = thunkAPI.getState()
-//         thunkAPI.dispatch()
-
-//         return firestore()
-//             .collection(constants.FIREBASE_USERS_COLLECTION)
-//             .limit(constants.FIREBASE_USERS_FETCH_LIMIT)
-//             .startAfter(rootStore.users.lastDocSnap)
-//             .get()
-//     }
-// )
 
 export const usersSlice = createSlice({
     name: 'users',
@@ -113,6 +100,26 @@ export const usersSlice = createSlice({
         }
     },
     extraReducers(builder) {
+        /**
+         * Get users
+         */
+        builder.addCase(getUsersThunk.pending, (state, _action) => {
+            state.isLoading = true
+        })
+        builder.addCase(getUsersThunk.fulfilled, (state, action) => {
+            const { payload } = action
+            state.isLoading = false
+            state.data = payload
+        })
+        builder.addCase(getUsersThunk.rejected, (state, action: UnknownAsyncThunkRejectedAction) => {
+            state.isLoading = false
+            state.error = action.error.message
+        })
+
+
+        /**
+         * Create User
+         */
         builder.addCase(createAuthUserThunk.pending, (state, _action) => {
             state.registerUserFailure = false
             state.registerUserSuccess = false
