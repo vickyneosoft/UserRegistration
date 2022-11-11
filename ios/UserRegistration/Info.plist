@@ -24,6 +24,10 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+  	<string>Allow Camera permission to capture image</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+  	<string>Allow Photo Library permission to select image</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
