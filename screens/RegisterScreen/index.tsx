@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo, useState } from "react";
+import React, { useRef, useCallback, useMemo, useState, useEffect } from "react";
 import { View, StyleSheet, Keyboard, Platform } from 'react-native'
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -18,11 +18,13 @@ import AppButton from "../../components/AppButton";
 
 // Utils
 import {
+    customLog,
     hasOnlyCharacters,
     hasOnlyNumbers,
     isValidEmail,
     isValidPassword,
-    openAppSettingsPrompt
+    openAppSettingsPrompt,
+    showToast
 } from "../../utils/MiscUtils";
 import { checkSinglePermission, requestSinglePermission } from "../../utils/PermissionUtils";
 
@@ -35,8 +37,9 @@ import images from "../../assets/images";
 import data from "../../data";
 
 // Redux
-import { registerNewUser } from "../../store/slices/usersSlice";
-import { useAppDispatch } from "../../hooks/redux";
+import { createAuthUserThunk, resetFlags } from "../../store/slices/usersSlice";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import AppLoader from "../../components/AppLoader";
 
 enum FormFieldIds {
     PROFILE_PHOTO = 'profilePhoto',
@@ -84,6 +87,13 @@ const RegisterScreen: React.FC<NativeStackScreenProps<any, any>> = (props) => {
 
     const dispatch = useAppDispatch()
 
+    const {
+        registerUserFailure,
+        registerUserSuccess,
+        error,
+        isLoading
+    } = useAppSelector(state => state.users)
+
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
 
     const firstNameRef = useRef<AppInputAPIs>(null);
@@ -92,6 +102,22 @@ const RegisterScreen: React.FC<NativeStackScreenProps<any, any>> = (props) => {
     const emailRef = useRef<AppInputAPIs>(null);
     const passwordRef = useRef<AppInputAPIs>(null);
     const confirmPasswordRef = useRef<AppInputAPIs>(null);
+
+    useEffect(() => {
+        if (registerUserFailure) {
+            showToast('registerUserFailure : ', error)
+        }
+    }, [registerUserFailure, error])
+
+    useEffect(() => {
+        if (registerUserSuccess) {
+            showToast('User registered successfully.')
+            navigation.goBack()
+            return () => {
+                dispatch(resetFlags())
+            }
+        }
+    }, [navigation, dispatch, registerUserSuccess])
 
     const initialValues = useMemo<FormFieldValueTypes>(
         () => ({
@@ -119,10 +145,9 @@ const RegisterScreen: React.FC<NativeStackScreenProps<any, any>> = (props) => {
                 ...formValues,
                 dob: new Date(formValues.dob).getTime()
             }
-            dispatch(registerNewUser(dataToBeStored))
-            navigation.goBack()
+            dispatch(createAuthUserThunk(dataToBeStored))
         },
-        [navigation, dispatch],
+        [dispatch],
     );
 
     const validate = useCallback((formValues: FormFieldValueTypes) => {
@@ -417,10 +442,9 @@ const RegisterScreen: React.FC<NativeStackScreenProps<any, any>> = (props) => {
     }, [])
 
     const onDateChangeHandler = useCallback((date: Date) => {
-        console.log(date?.getTime())
         setDatePickerVisible(false);
         onChangeTextHandler(FormFieldIds.DOB, date)
-    }, [])
+    }, [onChangeTextHandler])
 
     const yesterdayDate = useMemo(() => {
         const currDate = new Date()
@@ -430,6 +454,9 @@ const RegisterScreen: React.FC<NativeStackScreenProps<any, any>> = (props) => {
 
     return (
         <View style={styles.rootContainer}>
+            <AppLoader
+                isVisible={isLoading}
+            />
             <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"

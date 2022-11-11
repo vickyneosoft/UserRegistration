@@ -1,3 +1,6 @@
 export default {
+    FIREBASE_USERS_COLLECTION: 'users',
+    FIREBASE_USERS_STORAGE: 'users',
 
+    FIREBASE_USERS_FETCH_LIMIT: 15,
 }

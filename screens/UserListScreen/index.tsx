@@ -1,6 +1,7 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useCallback, useLayoutEffect, useMemo } from "react";
-import { View, StyleSheet, FlatList, ListRenderItemInfo } from 'react-native'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from "react";
+import { View, StyleSheet, FlatList, ListRenderItemInfo, InteractionManager } from 'react-native'
+import { useDispatch } from "react-redux";
 import AppButton from "../../components/AppButton";
 
 // Components
@@ -13,7 +14,8 @@ import UserItem from "../../components/UserItem";
 import colors from "../../constants/colors";
 
 // Redux
-import { useAppSelector } from "../../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { getUsersThunk } from "../../store/slices/usersSlice";
 
 // Types
 import { UserPayload } from "../../types";
@@ -24,7 +26,8 @@ import { customLog, keyExtractorHandler } from "../../utils/MiscUtils";
 const UserListScreen: React.FC<NativeStackScreenProps<any, any>> = (props: any) => {
     const { navigation } = props
 
-    const registeredUsers = useAppSelector(state => state.users.data)
+    const dispatch = useAppDispatch()
+    const { isLoading, data: registeredUsers } = useAppSelector(state => state.users)
 
     const onRegisterBtnPress = useCallback(() => {
         navigation.navigate('register')
@@ -62,10 +65,16 @@ const UserListScreen: React.FC<NativeStackScreenProps<any, any>> = (props: any) 
         )
     }, [onRegisterBtnPress])
 
+    useEffect(() => {
+        InteractionManager.runAfterInteractions(() => {
+            dispatch(getUsersThunk())
+        })
+    }, [dispatch])
+
     return (
         <>
             <FlatList
-                data={[]}
+                data={registeredUsers}
                 renderItem={renderUsersHandler}
                 keyExtractor={keyExtractorHandler}
                 ListEmptyComponent={renderListEmptyComponentHandler}

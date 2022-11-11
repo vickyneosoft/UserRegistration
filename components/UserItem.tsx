@@ -7,11 +7,13 @@ import BoldText from "./BoldText";
 
 // Constants
 import colors from "../constants/colors";
+import { qualificationObj } from "../data";
+import { EducationOptions } from "../types";
 
 type UserItemProps = {
     avatar: string,
     displayName: string
-    education: string
+    education: EducationOptions
     onPress: () => any
 }
 
@@ -31,7 +33,7 @@ const UserItem: React.FC<UserItemProps> = (props) => {
             />
             <View style={styles.userDetailsContainer}>
                 <BoldText numberOfLines={1} style={styles.displayNameTxt}>{displayName}</BoldText>
-                <RegularText numberOfLines={1} style={styles.educationTxt}>{education}</RegularText>
+                <RegularText numberOfLines={1} style={styles.educationTxt}>{qualificationObj[education]}</RegularText>
             </View>
         </Pressable>
     )

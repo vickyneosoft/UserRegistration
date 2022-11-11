@@ -1,9 +1,4 @@
-enum EducationOptions {
-    POST_GRADUATE = 'post_graduate',
-    GRADUATE = 'graduate',
-    HSC_DIPLOMA = 'hsc_diploma',
-    SSC = 'ssc',
-}
+import { EducationOptions } from "../types";
 
 export default {
     educationOptions: [
@@ -25,3 +20,10 @@ export default {
         },
     ]
 };
+
+export const qualificationObj = {
+    [EducationOptions.POST_GRADUATE]: 'Post Graduate',
+    [EducationOptions.GRADUATE]: 'Graduate',
+    [EducationOptions.HSC_DIPLOMA]: 'HSC/Diploma',
+    [EducationOptions.SSC]: 'SSC'
+}

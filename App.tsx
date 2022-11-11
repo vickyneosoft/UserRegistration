@@ -9,15 +9,22 @@
  */
 
 import React from 'react';
+import { RootSiblingParent } from 'react-native-root-siblings';
+
+// Navigation
 import MainNavigation from './navigation/MainNavigation';
+
+// Redux
 import { Provider } from 'react-redux'
 import { store } from './store';
 
 function App() {
   return (
-    <Provider store={store}>
-      <MainNavigation />
-    </Provider>
+    <RootSiblingParent>
+      <Provider store={store}>
+        <MainNavigation />
+      </Provider>
+    </RootSiblingParent>
   );
 };
 

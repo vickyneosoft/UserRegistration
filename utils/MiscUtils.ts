@@ -1,5 +1,12 @@
 import { Alert } from 'react-native';
+import Toast from 'react-native-root-toast';
 import { openSettings } from 'react-native-permissions';
+
+export const showToast = (message: string, timeout = 1500) => {
+  Toast.show(message, {
+    delay: timeout
+  })
+}
 
 export function openAppSettingsPrompt(title: string, message: string) {
   Alert.alert(title, message, [

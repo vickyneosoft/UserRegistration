@@ -14,6 +14,13 @@ export enum Gender {
   FEMALE = 'FEMALE',
 }
 
+export enum EducationOptions {
+  POST_GRADUATE = 'post_graduate',
+  GRADUATE = 'graduate',
+  HSC_DIPLOMA = 'hsc_diploma',
+  SSC = 'ssc',
+}
+
 export interface CommonUserPayload {
   firstName: string;
   lastName: string;
@@ -21,7 +28,7 @@ export interface CommonUserPayload {
   mobileNumber: number | undefined;
   profilePhoto: string;
   gender: Gender | unknown;
-  qualification: string;
+  qualification: EducationOptions;
   dob: number
 }
 
