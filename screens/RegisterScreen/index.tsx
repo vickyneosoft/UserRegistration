@@ -547,7 +547,7 @@ const RegisterScreen: React.FC<NativeStackScreenProps<any, any>> = (props) => {
                 errorMsg={errors.dob}
             />
             <AppButton
-                text="NEXT"
+                text="REGISTER"
                 onPress={onSubmitButtonPressHandler}
                 style={styles.btn}
             />
